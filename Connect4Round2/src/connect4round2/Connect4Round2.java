@@ -14,7 +14,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 
-
+// Represents a piece object, which can be assigned red, yellow or white (none)
 enum Piece
 {
     Red(Color.RED),
@@ -27,6 +27,8 @@ enum Piece
         this.pieceColor = theColor;
     }
 }
+
+// Represents the board
 final class Board extends JButton
 {
     public int i, j;
@@ -50,6 +52,7 @@ final class Board extends JButton
     }
 }
 
+// Used by the AI to pick its next piece
 final class MiniMax
 {
     Random rand = new Random();
@@ -143,7 +146,8 @@ final class MiniMax
         return bestMoves.get(random);
     }
 
-    public int score() // get the moveScore of each move
+    // Get the moveScore of each move
+    public int score()
     {
         int bestScore = 0;
         for(int j = 0; j < 6; j++)
@@ -227,12 +231,12 @@ public final class Connect4Round2 extends JFrame implements ActionListener
     int currentPlayer = 0;
     boolean AI = true;
 
-    public Connect4Round2(boolean AI)
+    public Connect4Round2()
     {
         super("Four In A Row");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        currentPlayer = (int)((Math.random()*2) + 1)% 2;
+        currentPlayer = (int)((((Math.random()*2) + 1)% 2) + 1);
 
         btnNewGame.addActionListener(this);
         switch(currentPlayer)
@@ -265,9 +269,11 @@ public final class Connect4Round2 extends JFrame implements ActionListener
         setSize(500, 500);
         setVisible(true);
 
-        if(currentPlayer == 2 && AI) insertTo(minimax());
+        if(currentPlayer == 2) insertTo(minimax());
     }
 
+    // Activates every time the display is clicked
+    // Nothing happens when clicking if there is a win or tie unless clicking the New Game button
     @Override
     public void actionPerformed(ActionEvent ae)
     {
@@ -277,16 +283,17 @@ public final class Connect4Round2 extends JFrame implements ActionListener
             if(JOptionPane.showConfirmDialog(this, "Ready for a new game?", "Confirmation", JOptionPane.YES_NO_OPTION) == 0)
             {
                 dispose();
-                Connect4Round2 connect4Round2 = new Connect4Round2(true);
+                Connect4Round2 connect4Round2 = new Connect4Round2();
             }
         }
-        else if(!winnerExists)
+        else if(!winnerExists && !tieExists)
         {
             Board Board = (Board)ae.getSource();
             insertTo(Board);
         }
     }
 
+    // Inserts the piece into the board and updates the display while also checking for a win or tie
     void insertTo(Board Board)
     {
         if(Board.piece != Piece.None)
@@ -315,6 +322,12 @@ public final class Connect4Round2 extends JFrame implements ActionListener
             lblPlayer.setText("Winner: ");
             winnerExists = true;
         }
+        else if(tie())
+        {
+            lblPlayer.setText("There is a tie.");
+            lblCurrentPlayer.setText("");
+            tieExists = true;
+        }
         else
         {
             switch(currentPlayer)
@@ -336,6 +349,7 @@ public final class Connect4Round2 extends JFrame implements ActionListener
         }
     }
 
+    // Checks every space in the board looking for a line of 4
     public boolean winner()
     {
         for(int j = 0; j < 6; j++)
@@ -350,7 +364,24 @@ public final class Connect4Round2 extends JFrame implements ActionListener
         }
         return false;
     }
+    
+    // Checks every space for any empty spaces. A tie occurs if there are no empty spaces
+    public boolean tie()
+    {
+        for(int j = 0; j < 6; j++)
+        {
+            for(int i = 0; i < 7; i++)
+            {
+                if(board[i][j].piece == Piece.None)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
+    // Checks all possible directions for a line of 4
     public boolean connectsToFour(int i, int j)
     {
         if(lineOfFour(i, j, -1, -1))
@@ -370,6 +401,7 @@ public final class Connect4Round2 extends JFrame implements ActionListener
         return lineOfFour(i, j, 1, 1);
     }
 
+    // Checks that the given piece and direction is a line of 4
     public boolean lineOfFour(int x, int y, int i, int j)
     {
         Piece color = board[x][y].piece;
@@ -392,7 +424,7 @@ public final class Connect4Round2 extends JFrame implements ActionListener
 
     public static void main(String[] args)
     {
-        new Connect4Round2(false);
+        new Connect4Round2();
     }
 }   
 
